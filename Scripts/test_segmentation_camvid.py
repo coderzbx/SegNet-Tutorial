@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os.path
@@ -7,7 +10,7 @@ import argparse
 import math
 import pylab
 from sklearn.preprocessing import normalize
-caffe_root = '/SegNet/caffe-segnet/' 			# Change this to the absolute directoy to SegNet Caffe
+caffe_root = '/opt/caffe/' 			# Change this to the absolute directoy to SegNet Caffe
 import sys
 sys.path.insert(0, caffe_root + 'python')
 
@@ -20,6 +23,7 @@ parser.add_argument('--weights', type=str, required=True)
 parser.add_argument('--iter', type=int, required=True)
 args = parser.parse_args()
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '1,2,3'
 caffe.set_mode_gpu()
 
 net = caffe.Net(args.model,
@@ -83,16 +87,16 @@ for i in range(0, args.iter):
 	output = np.transpose(output, (1,2,0))
 	image = image[:,:,(2,1,0)]
 
+	IMAGE_FILE = ''
+	scipy.misc.toimage(rgb, cmin=0.0, cmax=255).save(IMAGE_FILE+'_segnet.png')
 
-	#scipy.misc.toimage(rgb, cmin=0.0, cmax=255).save(IMAGE_FILE+'_segnet.png')
-
-	plt.figure()
-	plt.imshow(image,vmin=0, vmax=1)
-	plt.figure()
-	plt.imshow(rgb_gt,vmin=0, vmax=1)
-	plt.figure()
-	plt.imshow(rgb,vmin=0, vmax=1)
-	plt.show()
+	# plt.figure()
+	# plt.imshow(image,vmin=0, vmax=1)
+	# plt.figure()
+	# plt.imshow(rgb_gt,vmin=0, vmax=1)
+	# plt.figure()
+	# plt.imshow(rgb,vmin=0, vmax=1)
+	# plt.show()
 
 
 print 'Success!'
