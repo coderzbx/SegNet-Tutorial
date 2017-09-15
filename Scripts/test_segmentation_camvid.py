@@ -23,7 +23,7 @@ parser.add_argument('--weights', type=str, required=True)
 parser.add_argument('--iter', type=int, required=True)
 args = parser.parse_args()
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1,2,3'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '1,2,3'
 caffe.set_mode_gpu()
 
 net = caffe.Net(args.model,
@@ -73,13 +73,19 @@ for i in range(0, args.iter):
 		b_gt[label==l] = label_colours[l,2]
 
 	rgb = np.zeros((ind.shape[0], ind.shape[1], 3))
-	rgb[:,:,0] = r/255.0
-	rgb[:,:,1] = g/255.0
-	rgb[:,:,2] = b/255.0
+	# rgb[:,:,0] = r/255.0
+	# rgb[:,:,1] = g/255.0
+	# rgb[:,:,2] = b/255.0
+	rgb[:, :, 0] = r
+	rgb[:, :, 1] = g
+	rgb[:, :, 2] = b
 	rgb_gt = np.zeros((ind.shape[0], ind.shape[1], 3))
-	rgb_gt[:,:,0] = r_gt/255.0
-	rgb_gt[:,:,1] = g_gt/255.0
-	rgb_gt[:,:,2] = b_gt/255.0
+	# rgb_gt[:,:,0] = r_gt/255.0
+	# rgb_gt[:,:,1] = g_gt/255.0
+	# rgb_gt[:,:,2] = b_gt/255.0
+	rgb_gt[:, :, 0] = r_gt
+	rgb_gt[:, :, 1] = g_gt
+	rgb_gt[:, :, 2] = b_gt
 
 	image = image/255.0
 
@@ -88,7 +94,7 @@ for i in range(0, args.iter):
 	image = image[:,:,(2,1,0)]
 
 	IMAGE_FILE = ''
-	scipy.misc.toimage(rgb, cmin=0.0, cmax=255).save(IMAGE_FILE+'_segnet.png')
+	scipy.misc.toimage(rgb, cmin=0.0, cmax=255).save(str(i)+'_segnet.png')
 
 	# plt.figure()
 	# plt.imshow(image,vmin=0, vmax=1)

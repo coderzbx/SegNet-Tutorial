@@ -26,7 +26,7 @@ parser.add_argument('--colours', type=str, required=True)
 parser.add_argument('--data', type=str, required=True)
 args = parser.parse_args()
 
-GPU_ID = 1 # Switch between 0 and 1 depending on the GPU you want to use.
+GPU_ID = 0 # Switch between 0 and 1 depending on the GPU you want to use.
 caffe.set_mode_gpu()
 caffe.set_device(GPU_ID)
 

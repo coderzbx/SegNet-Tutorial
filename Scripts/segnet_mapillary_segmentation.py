@@ -57,7 +57,7 @@ input_image = frame.transpose((2, 0, 1))
 input_image = np.asarray([input_image])
 out = net.forward_all(data=input_image)
 
-segmentation_ind = np.squeeze(net.blobs['argmax'].data)
+segmentation_ind = np.squeeze(net.blobs['prob'].data)
 segmentation_ind_3ch = np.resize(segmentation_ind, (3, input_shape[2], input_shape[3]))
 # segmentation_ind_3ch = segmentation_ind.transpose(1, 2, 0).astype(np.uint8)
 segmentation_ind_3ch = segmentation_ind_3ch.transpose(1, 2, 0).astype(np.uint8)
