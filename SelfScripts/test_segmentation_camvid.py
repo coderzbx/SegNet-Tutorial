@@ -63,8 +63,11 @@ for i in range(0, args.iter):
 	Bicyclist = [0,128,192]
 	Unlabelled = [0,0,0]
 
-	label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
-	for l in range(0,11):
+	# label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Road_marking, Unlabelled])
+	label_colours = np.array(
+		[Sky, Building, Pole, Road_marking, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist,
+		 Unlabelled])
+	for l in range(0,12):
 		r[ind==l] = label_colours[l,0]
 		g[ind==l] = label_colours[l,1]
 		b[ind==l] = label_colours[l,2]
@@ -99,7 +102,7 @@ for i in range(0, args.iter):
 
 
 	# scipy.misc.toimage(rgb, cmin=0.0, cmax=255).save(str(i) + '_segnet.png')
-	scipy.misc.toimage(rgb).save("/SegNet/CamVid_lane/test/" + str(i) + '_segnet.png')
+	scipy.misc.toimage(rgb).save("/SegNet/CamVid_lane/output/" + str(i) + '_segnet.png')
 	print(str(i))
 
 	# plt.figure()
