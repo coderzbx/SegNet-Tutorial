@@ -18,7 +18,7 @@ if args.dir:
 else:
     cwd = os.getcwd() + '/'
 
-image_dir = cwd + 'trainannot/'
+image_dir = cwd
 
 images = listdir(image_dir)
 
@@ -97,4 +97,5 @@ for k, v in results.items():
 
 print("Copy this:")
 for k, v in results.items():
-    print ("    class_weighting:", round(v, 4))
+    # print ("class_weighting: ", round(v, 4))
+    print("class_weighting: {}".format(round(v, 4)))
