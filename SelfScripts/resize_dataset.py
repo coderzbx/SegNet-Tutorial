@@ -41,6 +41,7 @@ class FormatTrainSet:
             id_ext = id_ext[1]
             if id_ext != 'jpg' and id_ext != 'png':
                 continue
+            id_ = id_.lstrip("a-")
             src_image = os.path.join(src_image_dir, id_)
             dest_image = os.path.join(dest_image_dir, id_)
 
