@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
-
 import numpy as np
 import matplotlib.pyplot as plt
 import os.path
@@ -36,8 +33,8 @@ output_shape = net.blobs['argmax'].data.shape
 
 label_colours = cv2.imread(args.colours).astype(np.uint8)
 
-# cv2.namedWindow("Input")
-# cv2.namedWindow("SegNet")
+cv2.namedWindow("Input")
+cv2.namedWindow("SegNet")
 
 cap = cv2.VideoCapture(0) # Change this to your webcam ID, or file name for your video file
 
@@ -78,15 +75,12 @@ while rval:
 	end = time.time()
 	print '%30s' % 'Processed results in ', str((end - start)*1000), 'ms\n'
 
-	# cv2.imshow("Input", frame)
-	# cv2.imshow("SegNet", segmentation_rgb)
-
-	cv2.imwrite('input.png', frame)
-	cv2.imwrite('segnet.png', segmentation_rgb)
+	cv2.imshow("Input", frame)
+	cv2.imshow("SegNet", segmentation_rgb)
 	
 	key = cv2.waitKey(1)
 	if key == 27: # exit on ESC
 	    break
 cap.release()
-# cv2.destroyAllWindows()
+cv2.destroyAllWindows()
 

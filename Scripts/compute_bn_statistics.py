@@ -16,11 +16,6 @@ from caffe.proto import caffe_pb2
 from google.protobuf import text_format
 
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
-# GPU_ID = 1  # Switch between 0 and 1 depending on the GPU you want to use.
-# caffe.set_mode_gpu()
-
-
 def extract_dataset(net_message):
     assert net_message.layer[0].type == "DenseImageData"
     source = net_message.layer[0].dense_image_data_param.source
@@ -165,9 +160,7 @@ def make_parser():
 
 
 if __name__ == '__main__':
-    # os.environ["CUDA_VISIBLE_DEVICES"] = '1'
     caffe.set_mode_gpu()
-    caffe.set_device(1)
     p = make_parser()
     args = p.parse_args()
 
