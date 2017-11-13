@@ -35,6 +35,7 @@ class LabelTransform:
             if ext_name != 'png' and ext_name != 'jpg':
                 continue
 
+            result_path = result_path + ".txt"
             if os.path.exists(result_path):
                 continue
 
@@ -42,50 +43,37 @@ class LabelTransform:
             self.queue.put(task)
 
     def transform(self):
+
         while not self.queue.empty():
             task = self.queue.get()
             image_path = task.input_file
             result_path = task.output_file
 
-            print(image_path)
+            check_file = result_path
+            with open(check_file, "wb") as f:
+                f.write(image_path + "\n")
+                print(image_path)
 
-            img = cv2.imread(image_path)
+                img = cv2.imread(image_path)
 
-            width = img.shape[1]
-            height = img.shape[0]
+                width = img.shape[1]
+                height = img.shape[0]
 
-            anna_img = Image.new('L', (width, height))
+                anna_img = Image.new('L', (width, height))
 
-            img_data = anna_img.load()
-            for x in range(width):
-                for y in range(height):
-                    color = img[y, x]
-                    color = color[::-1]
-                    r = color[0]
-                    g = color[1]
-                    b = color[2]
-                    color = tuple(color)
-                    if color in self.clr_label:
-                        label_id = self.clr_label[color]
-                        img_data[x, y] = label_id
-                    else:
-                        _find = False
-                        label_id = self.unlabeled
-                        for k,v in self.clr_label.items():
-                            tmp_r = k[0]
-                            tmp_g = k[1]
-                            tmp_b = k[2]
-                            if r >= tmp_r-5 and r <= tmp_r+5 and g >= tmp_g-5 and g <= tmp_g+5 and b >= tmp_b-5 and b <= tmp_b+5:
-                                label_id = v
-                                _find = True
-                                break
-                        if _find:
+                img_data = anna_img.load()
+                for x in range(width):
+                    for y in range(height):
+                        color = img[y, x]
+                        color = color[::-1]
+                        color = tuple(color)
+                        if color in self.clr_label:
+                            label_id = self.clr_label[color]
                             img_data[x, y] = label_id
                         else:
-                            print(color)
-                            img_data[x, y] = self.unlabeled
-
-            anna_img.save(result_path)
+                            msg = "x,y:[{},{}],color:[{}]\n".format(x, y, str(color))
+                            f.write(msg)
+                f.flush()
 
 
 if __name__ == '__main__':
@@ -107,19 +95,19 @@ if __name__ == '__main__':
 
     type_list = [""]
     instance_dir = os.path.join(dir, "labels")
-    label_dir = os.path.join(dir, "annotations")
+    label_dir = os.path.join(dir, "checks")
     if not os.path.exists(label_dir):
         os.makedirs(label_dir)
 
     transFormer.enter_queue(instance_dir, label_dir)
-    # transFormer.transform()
+    transFormer.transform()
 
-    process1 = multiprocessing.Process(target=transFormer.transform)
-    process2 = multiprocessing.Process(target=transFormer.transform)
-    process3 = multiprocessing.Process(target=transFormer.transform)
-    process4 = multiprocessing.Process(target=transFormer.transform)
-
-    process1.start()
-    process2.start()
-    process3.start()
-    process4.start()
+    # process1 = multiprocessing.Process(target=transFormer.transform)
+    # process2 = multiprocessing.Process(target=transFormer.transform)
+    # process3 = multiprocessing.Process(target=transFormer.transform)
+    # process4 = multiprocessing.Process(target=transFormer.transform)
+    #
+    # process1.start()
+    # process2.start()
+    # process3.start()
+    # process4.start()

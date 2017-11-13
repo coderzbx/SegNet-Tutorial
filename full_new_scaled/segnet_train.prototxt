@@ -6,7 +6,7 @@ layer {
   top: "label"
   dense_image_data_param {
     source: "/SegNet/full_new_scaled/train.txt"	# Change this to the absolute path to your data file
-    batch_size: 4   			# Change this number to a batch size that will fit on your GPU
+    batch_size: 5   			# Change this number to a batch size that will fit on your GPU
     shuffle: true
   }
 }
@@ -1505,6 +1505,7 @@ layer {
   top: "conv1_1_D"
   name: "conv1_1_D"
   type: "Convolution"
+  propagate_down : 0
   param {
     lr_mult: 1
     decay_mult: 1
@@ -1535,20 +1536,19 @@ layer {
   loss_param: {
     weight_by_label_freqs: true
     ignore_label: 13
-    class_weighting: 0.2011
-    class_weighting: 0.1421
-    class_weighting: 4.1016
-    class_weighting: 0.1673
-    class_weighting: 0.5324
-    class_weighting: 0.4042
-    class_weighting: 3.7996
-    class_weighting: 1.2717
-    class_weighting: 0.7262
-    class_weighting: 4.5524
-    class_weighting: 8.6424
-    class_weighting: 4.2627
-    class_weighting: 7.153
-    class_weighting: 0.824
+    class_weighting: 0.1806
+    class_weighting: 0.1183
+    class_weighting: 2.9012
+    class_weighting: 0.1047
+    class_weighting: 0.4193
+    class_weighting: 0.2371
+    class_weighting: 2.5751
+    class_weighting: 1.046
+    class_weighting: 0.6026
+    class_weighting: 2.5032
+    class_weighting: 2.8525
+    class_weighting: 3.2278
+    class_weighting: 2.8947
   }
 }
 layer {
