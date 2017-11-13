@@ -59,6 +59,7 @@ with open(args.model, "rb") as f1:
 
 				test_file = f.readline()
 
+
 for i in range(0, args.iter):
 
 	net.forward()
@@ -89,10 +90,11 @@ for i in range(0, args.iter):
 	Car = [64,0,128]
 	Pedestrian = [64,64,0]
 	Bicyclist = [0,128,192]
+	Road_symbol = [64, 128, 128]
 	Unlabelled = [0,0,0]
 
-	label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Road_marking, Unlabelled])
-	for l in range(0,13):
+	label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Road_marking, Road_symbol, Unlabelled])
+	for l in range(0,14):
 		r[ind==l] = label_colours[l,0]
 		g[ind==l] = label_colours[l,1]
 		b[ind==l] = label_colours[l,2]
@@ -130,7 +132,7 @@ for i in range(0, args.iter):
 	output_file = i
 	if i in file_list:
 		output_file = file_list[i]
-	scipy.misc.toimage(rgb).save("/SegNet/CamVid_lane/output/" + str(output_file) + '_segnet.png')
+	scipy.misc.toimage(rgb).save("/SegNet/full_new_scaled/output/" + str(output_file) + '_segnet.png')
 	print(str(i))
 
 	# plt.figure()
