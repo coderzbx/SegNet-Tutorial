@@ -10,6 +10,7 @@ import cv2
 
 from Mapillary.mapillary_label import mapillary_instance_labels
 from multiprocessing import Queue
+from multiprocessing import Manager
 import time
 import multiprocessing
 
@@ -32,46 +33,47 @@ class CalcTask:
 
 
 class CalculateWeight:
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = CalculateWeight()
-
-            cls.lock = multiprocessing.Lock()
-
-            cls.ret_index = 0
-
-            cls.all_pixels = dict()
-            cls.dic_class_pixelcount = dict()
-            cls.overall_pixelcount = dict()
-            cls.dic_class_imagecount = dict()
-
-            cls.single_queue = Queue()
-            cls.sum_queue = Queue()
-            cls.calc_queue = Queue()
-
-            # id->class_name
-            cls.id_name_dict = {l.id: l.name for l in mapillary_instance_labels}
-
-            # id=>[{filename=>pixel_coord}],limit
-            cls.id_labeled_dict = {l.id: [] for l in mapillary_instance_labels}
-
-            # file_name=>total_pixel_count
-            cls.file_pixel_dict = dict()
-
-            # id=>{file_name=>pixel_count}
-            cls.id_pixel_dict = {l.id: {} for l in mapillary_instance_labels}
-
-            # id=>file_count
-            cls.id_file_count = {l.id: 0 for l in mapillary_instance_labels}
-
-        return cls._instance
-
-    def __init__(self, label_dir, image_dir, class_dir, limit):
+    def __init__(self, label_dir, image_dir, class_dir, limit, mgr, total_count):
+        self.total_count = total_count
         self.symbol_size = 50
         self.label_dir = label_dir
         self.image_dir = image_dir
         self.class_dir = class_dir
         self.limit = limit
+
+        self.single_queue = Queue()
+        self.sum_queue = Queue()
+        self.calc_queue = Queue()
+
+        self.lock = multiprocessing.Lock()
+
+        self.ret_index = 0
+
+        self.mgr = mgr
+
+        self.all_pixels = self.mgr.dict()
+        self.dic_class_pixelcount = self.mgr.dict()
+        self.overall_pixelcount = self.mgr.dict()
+        self.dic_class_imagecount = self.mgr.dict()
+
+        # id->class_name
+        self.id_name_dict = {l.id: l.name for l in mapillary_instance_labels}
+
+        # id=>[{filename=>pixel_coord}],limit
+        # self.id_labeled_dict = {l.id: [] for l in mapillary_instance_labels}
+        self.id_labeled_dict = self.mgr.dict()
+
+        # file_name=>total_pixel_count
+        # self.file_pixel_dict = dict()
+        self.file_pixel_dict = self.mgr.dict()
+
+        # id=>{file_name=>pixel_count}
+        # self.id_pixel_dict = {l.id: {} for l in mapillary_instance_labels}
+        self.id_pixel_dict = self.mgr.dict()
+
+        # id=>file_count
+        # self.id_file_count = {l.id: 0 for l in mapillary_instance_labels}
+        self.id_file_count = self.mgr.dict()
 
     def start_queue(self, image_list):
         if not isinstance(image_list, list):
@@ -79,42 +81,18 @@ class CalculateWeight:
 
         for _image in image_list:
             self.single_queue.put(_image)
+            name_list = str(_image).split("/")
+            file_id_ = name_list[len(name_list) - 1]
+
+            pix_data = cv2.imread(_image)
+            width = pix_data.shape[1]
+            height = pix_data.shape[0]
+
+            self.file_pixel_dict[file_id_] = width * height
 
         return
 
-    def add_sum(self):
-        while True:
-            if self.sum_queue.empty():
-                time.sleep(1)
-                continue
-
-            task = self.sum_queue.get()
-            if not isinstance(task, SumTask):
-                break
-
-            if task.stop_flag:
-                break
-
-            dic_class_pixelcount = task.dic_class_pixelcount
-            img = task.image_file
-            if not isinstance(dic_class_pixelcount, dict):
-                break
-
-            for key, value in dic_class_pixelcount.items():
-                # Sum up the number of classes returned from get_class_per_image function
-                self.overall_pixelcount[key] = self.overall_pixelcount.get(key, 0) + value
-
-                # If the class is present in the image, then increase the value by one
-                # shows in how many images a particular class is present
-                key_file = str(img).split("/")
-                key_file = key_file[len(key_file) - 1]
-                total_pixel = self.file_pixel_dict[key_file]
-                self.dic_class_pixelcount[key] = self.dic_class_pixelcount.get(key, 0) + total_pixel
-
-                # id=>file_count
-                self.dic_class_imagecount[key] = self.dic_class_imagecount.get(key, 0) + 1
-
-    def get_class_per_image(self):
+    def get_class_per_image(self, lock):
         while not self.single_queue.empty():
             # ret_count = 2
             # self.ret_index += 1
@@ -151,10 +129,12 @@ class CalculateWeight:
                         new_v = {file_id_: (x, y)}
                         _id_labeled_dict[cls_id] = new_v
 
-            with self.lock:
-                self.file_pixel_dict[file_id_] = width * height
+            with lock:
+                # self.file_pixel_dict[file_id_] = width * height
                 for k, v in _id_labeled_dict.items():
-                    _v1 = self.id_labeled_dict[k]
+                    _v1 = []
+                    if k in self.id_labeled_dict:
+                        _v1 = self.id_labeled_dict[k]
 
                     exist_file = False
                     if isinstance(_v1, list):
@@ -170,9 +150,16 @@ class CalculateWeight:
                         if not exist_file:
                             _v1.append(v)
                             self.id_labeled_dict[k] = _v1
+                #
+                # print("self.id_labeled_dict\n")
+                # print(self.id_labeled_dict)
+                # print("\n")
 
                 for k, v in dic_class_pixelcount.items():
                     self.id_pixel_dict[k] = {file_id_: v}
+                # print("self.id_pixel_dict\n")
+                # print(self.id_pixel_dict)
+                # print("\n")
 
             end = time.time()
             print("{} in {} s".format(img, (end-start)))
@@ -181,12 +168,52 @@ class CalculateWeight:
             self.sum_queue.put(next_task)
 
         # 放入结束标志
-        next_task = SumTask(dic_class_pixelcount=None, image_file='', stop_flag=True)
-        self.sum_queue.put(next_task)
+        # next_task = SumTask(dic_class_pixelcount=None, image_file='', stop_flag=True)
+        # self.sum_queue.put(next_task)
+
+    def add_sum(self, lock):
+        while True:
+            if self.sum_queue.empty():
+                time.sleep(1)
+                continue
+
+            task = self.sum_queue.get()
+            if not isinstance(task, SumTask):
+                break
+
+            # if task.stop_flag:
+            #     break
+
+            dic_class_pixelcount = task.dic_class_pixelcount
+            img = task.image_file
+            self.ret_index += 1
+
+            print(img)
+            if not isinstance(dic_class_pixelcount, dict):
+                break
+
+            for key, value in dic_class_pixelcount.items():
+                with lock:
+                    # Sum up the number of classes returned from get_class_per_image function
+                    self.overall_pixelcount[key] = self.overall_pixelcount.get(key, 0) + value
+
+                    # If the class is present in the image, then increase the value by one
+                    # shows in how many images a particular class is present
+                    key_file = str(img).split("/")
+                    key_file = key_file[len(key_file) - 1]
+                    total_pixel = self.file_pixel_dict[key_file]
+                    self.dic_class_pixelcount[key] = self.dic_class_pixelcount.get(key, 0) + total_pixel
+
+                    # id=>file_count
+                    self.dic_class_imagecount[key] = self.dic_class_imagecount.get(key, 0) + 1
+
+            if self.ret_index == self.total_count:
+                break
 
     def cal_class_weights(self):
         # Save above 2 variables in a list
         result = dict()
+
         overall_items = self.overall_pixelcount.items()
         overall_items.sort()
         for k, v in overall_items:
@@ -235,6 +262,8 @@ class CalculateWeight:
             print("class_weighting: {}".format(round(v, 4)))
 
     def label_symbol(self):
+        print("id_labeled_dict:{}".format(len(self.id_labeled_dict)))
+        print(self.id_labeled_dict)
         for cls_id, file_pixel in self.id_labeled_dict.items():
             cls_name = self.id_name_dict[cls_id]
             if cls_id < 10:
@@ -306,16 +335,20 @@ if __name__ == '__main__':
     image_list = [os.path.join(label_dir, s) for s in images if s.lower().endswith(('.png', '.jpg', '.jpeg'))]
     print("Number of images:%d" % len(image_list))
 
-    calculate_proc = CalculateWeight(label_dir, image_dir, class_dir, limit)
+    mgr = multiprocessing.Manager()
+
+    calculate_proc = CalculateWeight(label_dir, image_dir, class_dir, limit, mgr, len(images))
     calculate_proc.start_queue(image_list)
 
     print("waiting for insert images to queue....\n")
     time.sleep(5)
 
-    process_per_image_1 = multiprocessing.Process(target=calculate_proc.get_class_per_image)
-    process_per_image_2 = multiprocessing.Process(target=calculate_proc.get_class_per_image)
-    process_per_image_3 = multiprocessing.Process(target=calculate_proc.get_class_per_image)
-    process_per_image_4 = multiprocessing.Process(target=calculate_proc.get_class_per_image)
+    lock = multiprocessing.Lock()
+
+    process_per_image_1 = multiprocessing.Process(target=calculate_proc.get_class_per_image, args=(lock,))
+    process_per_image_2 = multiprocessing.Process(target=calculate_proc.get_class_per_image, args=(lock,))
+    process_per_image_3 = multiprocessing.Process(target=calculate_proc.get_class_per_image, args=(lock,))
+    process_per_image_4 = multiprocessing.Process(target=calculate_proc.get_class_per_image, args=(lock,))
 
     process_per_image_1.start()
     process_per_image_2.start()
@@ -336,7 +369,7 @@ if __name__ == '__main__':
 
     # process_sum_proc.join()
 
-    calculate_proc.add_sum()
+    calculate_proc.add_sum(lock=lock)
 
     # label symbol
     print("export class_weighting....\n")
