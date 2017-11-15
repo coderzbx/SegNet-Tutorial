@@ -57,13 +57,13 @@ class SubDataSet:
                     os.makedirs(dest_image_dir)
 
                 id_ = "{}.png".format(file_name)
-                src_image_path = os.path.join(self.label_dir, id_)
+                src_image_path = os.path.join(self.annot_dir, id_)
                 dest_image_path = os.path.join(dest_image_dir, id_)
                 if os.path.exists(src_image_path):
                     shutil.copyfile(src_image_path, dest_image_path)
                 else:
                     id_ = "{}.jpg".format(file_name)
-                    src_image_path = os.path.join(self.label_dir, id_)
+                    src_image_path = os.path.join(self.annot_dir, id_)
                     dest_image_path = os.path.join(dest_image_dir, id_)
                     if os.path.exists(src_image_path):
                         shutil.copyfile(src_image_path, dest_image_path)
