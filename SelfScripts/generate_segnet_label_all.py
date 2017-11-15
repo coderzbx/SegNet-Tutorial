@@ -43,7 +43,7 @@ class LabelTransform:
                     img_data[x, y] = color
 
             label_img.save(result_path)
-f
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
