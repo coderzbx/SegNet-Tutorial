@@ -9,13 +9,17 @@ import collections
 import cv2
 
 from Mapillary.mapillary_label import mapillary_instance_labels
-from multiprocessing import Process
 from multiprocessing import Queue
 
 
 class SingleImage:
     def __init__(self, dic_class_pixelcount):
         self.dic_class_pixelcount = dic_class_pixelcount
+
+class SumTask:
+    def __init__(self, dic_class_pixelcount, stop_flag=False):
+        self.dic_class_pixelcount = dic_class_pixelcount
+        self.stop_flag = stop_flag
 
 
 class CalculateWeight:
@@ -47,6 +51,9 @@ class CalculateWeight:
         # id=>file_count
         self.id_file_count = {l.id: 0 for l in mapillary_instance_labels}
 
+
+    def start_queue(self):
+        return
 
     def add_sum(self):
         while True:
@@ -225,7 +232,6 @@ if __name__ == '__main__':
     image_dir = args.image_dir
 
     images = listdir(label_dir)
-    images = [images[i] for i in range(0, limit)]
     # Keep only images and append image_names to directory
     image_list = [os.path.join(label_dir, s) for s in images if s.lower().endswith(('.png', '.jpg', '.jpeg'))]
     print("Number of images:%d" % len(image_list))

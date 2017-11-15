@@ -1,3 +1,6 @@
+# -*-coding:utf-8-*-
+
+
 from SelfScripts.segnet_label import segnet_14_labels
 from PIL import Image
 import cv2

@@ -33,7 +33,7 @@ if limit <= 0:
 image_dir = args.image_dir
 
 images = listdir(label_dir)
-images = [images[i] for i in range(0, limit)]
+# images = [images[i] for i in range(0, limit)]
 # Keep only images and append image_names to directory
 image_list = [os.path.join(label_dir, s) for s in images if s.lower().endswith(('.png', '.jpg', '.jpeg'))]
 print("Number of images:%d" % len(image_list))
