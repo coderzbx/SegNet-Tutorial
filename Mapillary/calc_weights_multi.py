@@ -81,14 +81,14 @@ class CalculateWeight:
 
         for _image in image_list:
             self.single_queue.put(_image)
-            name_list = str(_image).split("/")
-            file_id_ = name_list[len(name_list) - 1]
-
-            pix_data = cv2.imread(_image)
-            width = pix_data.shape[1]
-            height = pix_data.shape[0]
-
-            self.file_pixel_dict[file_id_] = width * height
+            # name_list = str(_image).split("/")
+            # file_id_ = name_list[len(name_list) - 1]
+            #
+            # pix_data = cv2.imread(_image)
+            # width = pix_data.shape[1]
+            # height = pix_data.shape[0]
+            #
+            # self.file_pixel_dict[file_id_] = width * height
 
         return
 
@@ -130,7 +130,7 @@ class CalculateWeight:
                         _id_labeled_dict[cls_id] = new_v
 
             with lock:
-                # self.file_pixel_dict[file_id_] = width * height
+                self.file_pixel_dict[file_id_] = width * height
                 for k, v in _id_labeled_dict.items():
                     _v1 = []
                     if k in self.id_labeled_dict:
